@@ -39,6 +39,13 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 
 	constructor(protected context: DeviceContextAPI<TcpSendDeviceState>) {
 		// Nothing
+
+		this.tcpConnection.on('error', (errContext, err) => {
+			this.context.logger.error(errContext, err)
+		})
+		this.tcpConnection.on('connectionChanged', () => {
+			this.context.connectionChanged(this.getStatus())
+		})
 	}
 
 	async init(options: TcpSendOptions): Promise<boolean> {
