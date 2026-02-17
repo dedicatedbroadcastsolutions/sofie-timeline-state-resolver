@@ -606,7 +606,7 @@ describe('Conductor', () => {
 		// }
 	})
 
-	test('resync states uses current time for state before now', async () => {
+	test('setDatastore replay uses current time for state before now', async () => {
 		const myLayerMapping0: Mapping<SomeMappingAbstract> = {
 			device: DeviceType.ABSTRACT,
 			deviceId: 'device0',
@@ -623,11 +623,9 @@ describe('Conductor', () => {
 
 		try {
 			await conductor.init()
-			await addConnections(conductor.connectionManager, {
-				device0: {
-					type: DeviceType.ABSTRACT,
-					options: {},
-				},
+			await conductor.addDevice('device0', {
+				type: DeviceType.ABSTRACT,
+				options: {},
 			})
 
 			const device0 = await getMockDeviceWrapper(conductor, 'device0')
@@ -645,6 +643,12 @@ describe('Conductor', () => {
 						content: {
 							deviceType: DeviceType.ABSTRACT,
 							foo: 'bar',
+							$references: {
+								foo: {
+									datastoreKey: 'key0',
+									overwrite: false,
+								},
+							},
 						},
 					},
 				],
@@ -657,7 +661,12 @@ describe('Conductor', () => {
 			device0.handleState.mockClear()
 
 			const resyncTime = mockTime.now
-			;(conductor as any).resyncDeviceStates('device0')
+			conductor.setDatastore({
+				key0: {
+					value: 'baz',
+					modified: mockTime.now,
+				},
+			})
 			await mockTime.tick()
 
 			expect(device0.handleState).toHaveBeenCalled()
