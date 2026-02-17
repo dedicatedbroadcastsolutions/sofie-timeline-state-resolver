@@ -629,7 +629,8 @@ describe('Conductor', () => {
 			})
 
 			const device0 = await getMockDeviceWrapper(conductor, 'device0')
-			device0.handleState.mockImplementation(async () => Promise.resolve())
+			const handleStateMock = device0.handleState as unknown as jest.Mock<Promise<void>, [unknown, unknown]>
+			handleStateMock.mockResolvedValue(undefined)
 
 			conductor.setTimelineAndMappings(
 				[
