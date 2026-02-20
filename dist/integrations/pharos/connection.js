@@ -124,9 +124,8 @@ class Pharos extends events_1.EventEmitter {
     async getTextSlot(names) {
         const params = {};
         if (names) {
-            if (!_.isArray(names))
-                names = [names];
-            params.names = names.join(','); // TODO: test that this actually works
+            const namesArray = Array.isArray(names) ? names : [names];
+            params.names = namesArray.join(','); // TODO: test that this actually works
         }
         return this.request('text_slot', params);
     }
@@ -145,9 +144,8 @@ class Pharos extends events_1.EventEmitter {
     async getLuaVariables(vars) {
         const params = {};
         if (vars) {
-            if (!_.isArray(vars))
-                vars = [vars];
-            params.variables = vars.join(',');
+            const varsArray = Array.isArray(vars) ? vars : [vars];
+            params.variables = varsArray.join(',');
         }
         return this.request('lua', params);
     }

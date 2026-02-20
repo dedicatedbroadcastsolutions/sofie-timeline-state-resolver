@@ -447,10 +447,16 @@ class CasparCGDevice extends device_1.DeviceWithState {
                     const currentTemplateData = channel.layers[mapping.options.layer]
                         ?.templateData;
                     const foregroundTemplateData = foregroundStateLayer?.templateData;
+                    const hasObjectTemplateData = typeof currentTemplateData === 'object' &&
+                        currentTemplateData !== null &&
+                        typeof foregroundTemplateData === 'object' &&
+                        foregroundTemplateData !== null;
                     channel.layers[mapping.options.layer] = merge(channel.layers[mapping.options.layer], {
                         ...foregroundStateLayer,
-                        ...(_.isObject(currentTemplateData) && _.isObject(foregroundTemplateData)
-                            ? { templateData: (0, lib_1.deepMerge)(currentTemplateData, foregroundTemplateData) }
+                        ...(hasObjectTemplateData
+                            ? {
+                                templateData: (0, lib_1.deepMerge)(currentTemplateData, foregroundTemplateData),
+                            }
                             : {}),
                         nextUp: backgroundStateLayer
                             ? merge((channel.layers[mapping.options.layer] || {}).nextUp, (0, lib_1.literal)({

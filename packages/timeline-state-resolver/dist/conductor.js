@@ -610,7 +610,8 @@ class Conductor extends eventemitter3_1.EventEmitter {
                 _.each(o.objectsFixed, (o) => (nowIdsTime[o.id] = o.time));
                 const fixNow = (o) => {
                     if (nowIdsTime[o.id]) {
-                        if (!_.isArray(o.enable)) {
+                        if (!_.isArray(o.enable) && typeof o.enable === 'object' && o.enable !== null) {
+                            ;
                             o.enable.start = nowIdsTime[o.id];
                         }
                     }

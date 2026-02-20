@@ -15,6 +15,7 @@ import { ThreadedClass } from 'threadedclass'
 import { getMockCall } from './lib'
 import { setupAllMocks } from '../__mocks__/_setup-all-mocks'
 import { Commands } from 'casparcg-connection'
+import { BasicCasparCGAPI as MockCasparCGAPI } from '../__mocks__/casparcg-connection'
 import { MockDeviceInstanceWrapper, ConstructedMockDevices, DiscardAllMockDevices } from './mockDeviceInstanceWrapper'
 
 // Mock explicitly the 'dist' version, as that is what threadedClass is being told to load
@@ -672,6 +673,98 @@ describe('Conductor', () => {
 
 			expect(device0.handleState).toHaveBeenCalled()
 			expect(getMockCall(device0.handleState, 0, 0).time).toEqual(resyncTime)
+		} finally {
+			await conductor.destroy()
+		}
+	})
+
+	test('CasparCG reconnect restores long-running playback using original start time', async () => {
+		const commandReceiver0: jest.Mock = jest.fn(async () => Promise.resolve())
+
+		const myLayerMapping0: Mapping<SomeMappingCasparCG> = {
+			device: DeviceType.CASPARCG,
+			deviceId: 'device0',
+			options: {
+				mappingType: MappingCasparCGType.Layer,
+				channel: 1,
+				layer: 10,
+			},
+		}
+		const myLayerMapping: Mappings = {
+			myLayer0: myLayerMapping0,
+		}
+
+		const timeline: TSRTimeline = [
+			{
+				id: 'video0',
+				enable: {
+					start: mockTime.now,
+					duration: 10 * 60 * 1000,
+				},
+				layer: 'myLayer0',
+				content: {
+					deviceType: DeviceType.CASPARCG,
+					type: TimelineContentTypeCasparCg.MEDIA,
+					file: 'MY_FILE',
+				},
+			} as TSRTimelineObj<TimelineContentCCGMedia>,
+		]
+
+		const conductor = new Conductor({
+			multiThreadedResolver: false,
+			getCurrentTime: mockTime.getCurrentTime,
+		})
+
+		try {
+			const previousInstancesCount = MockCasparCGAPI.instances.length
+
+			await conductor.init()
+			await conductor.addDevice('device0', {
+				type: DeviceType.CASPARCG,
+				options: {
+					host: '127.0.0.1',
+				},
+				commandReceiver: commandReceiver0,
+			})
+
+			await mockTime.advanceTimeTicks(20)
+			const ccgInstance = MockCasparCGAPI.instances[previousInstancesCount]
+			expect(ccgInstance).toBeTruthy()
+
+			conductor.setTimelineAndMappings(timeline, myLayerMapping)
+			await mockTime.advanceTimeToTicks(10200)
+
+			expect(commandReceiver0).toHaveBeenCalledTimes(1)
+			expect(getMockCall(commandReceiver0, 0, 1).command).toEqual(Commands.Play)
+			expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
+				clip: 'MY_FILE',
+				channel: 1,
+				layer: 10,
+			})
+
+			commandReceiver0.mockClear()
+
+			// Simulate disconnect after 1 minute of playout, then reconnect when
+			// playout position should be 2 minutes from original timeline start.
+			await mockTime.advanceTimeToTicks(70000)
+			ccgInstance.connected = false
+			ccgInstance.emit('disconnect')
+			await mockTime.tick()
+
+			await mockTime.advanceTimeToTicks(130000)
+			ccgInstance.connected = true
+			ccgInstance.emit('connect')
+			await mockTime.advanceTimeTicks(50)
+
+			expect(commandReceiver0).toHaveBeenCalledTimes(1)
+			expect(getMockCall(commandReceiver0, 0, 1).command).toEqual(Commands.Play)
+			expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
+				clip: 'MY_FILE',
+				channel: 1,
+				layer: 10,
+			})
+			expect(getMockCall(commandReceiver0, 0, 1).params.seek).toBeGreaterThanOrEqual(2990)
+			expect(getMockCall(commandReceiver0, 0, 1).params.seek).toBeLessThanOrEqual(3015)
 		} finally {
 			await conductor.destroy()
 		}

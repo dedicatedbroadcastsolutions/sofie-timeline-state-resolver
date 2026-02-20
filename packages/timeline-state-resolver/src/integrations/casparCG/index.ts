@@ -574,10 +574,20 @@ export class CasparCGDevice extends DeviceWithState<State, DeviceOptionsCasparCG
 					const currentTemplateData = (channel.layers[mapping.options.layer] as any as TemplateLayer | undefined)
 						?.templateData
 					const foregroundTemplateData = (foregroundStateLayer as any as TemplateLayer | undefined)?.templateData
+					const hasObjectTemplateData =
+						typeof currentTemplateData === 'object' &&
+						currentTemplateData !== null &&
+						typeof foregroundTemplateData === 'object' &&
+						foregroundTemplateData !== null
 					channel.layers[mapping.options.layer] = merge(channel.layers[mapping.options.layer], {
 						...foregroundStateLayer,
-						...(_.isObject(currentTemplateData) && _.isObject(foregroundTemplateData)
-							? { templateData: deepMerge(currentTemplateData, foregroundTemplateData) }
+						...(hasObjectTemplateData
+							? {
+									templateData: deepMerge(
+											currentTemplateData as Record<string, any>,
+											foregroundTemplateData as Record<string, any>
+									),
+							  }
 							: {}),
 						nextUp: backgroundStateLayer
 							? merge(
