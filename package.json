@@ -49,24 +49,24 @@
   ],
   "scripts": {
     "unlink:all": "yarn unlink atem-connection & yarn unlink atem-state & yarn unlink casparcg-connection & yarn unlink casparcg-state & yarn unlink superfly-timeline",
-    "build": "run -T rimraf dist && run build:main && run translations:bundle",
-    "build:main": "run -T tsc -p tsconfig.build.json",
-    "lint:raw": "run -T eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
+    "build": "rimraf dist && yarn build:main && yarn translations:bundle && rsync -a --delete packages/timeline-state-resolver/dist/ dist/",
+    "build:main": "tsc -p packages/timeline-state-resolver/tsconfig.build.json",
+    "lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
     "lint": "run lint:raw .",
     "lint-fix": "run lint --fix",
-    "license-validate": "run -T sofie-licensecheck",
-    "unit": "run -T jest --forceExit",
-    "unitci": "run -T jest --forceExit --coverage",
+    "license-validate": "sofie-licensecheck",
+    "unit": "jest --forceExit",
+    "unitci": "jest --forceExit --coverage",
     "test": "run lint && run unit",
-    "test:integration": "run lint && run -T jest --config=jest-integration.config.js",
-    "watch": "run -T jest --watch",
-    "cov": "run -T jest --coverage && run cov-open",
-    "cov-open": "run -T open-cli coverage/lcov-report/index.html",
+    "test:integration": "run lint && jest --config=jest-integration.config.js",
+    "watch": "jest --watch",
+    "cov": "jest --coverage && run cov-open",
+    "cov-open": "open-cli coverage/lcov-report/index.html",
     "validate:dependencies": "yarn npm audit --environment production && run license-validate",
     "validate:dev-dependencies": "yarn npm audit --environment development",
-    "generate-schema-types": "node ./scripts/schema-types.mjs",
-    "translations:extract": "node ./scripts/translation/extract.mjs",
-    "translations:bundle": "node ./scripts/translation/bundle.mjs"
+    "generate-schema-types": "cd packages/timeline-state-resolver && node ./scripts/schema-types.mjs",
+    "translations:extract": "cd packages/timeline-state-resolver && node ./scripts/translation/extract.mjs",
+    "translations:bundle": "cd packages/timeline-state-resolver && node ./scripts/translation/bundle.mjs"
   },
   "engines": {
     "node": "^14.18 || ^16.14 || 18"
@@ -139,6 +139,8 @@
     "jest-mock-extended": "^3.0.7",
     "json-schema-ref-parser": "^9.0.9",
     "json-schema-to-typescript": "^10.1.5",
+    "rimraf": "^5.0.5",
+    "typescript": "~4.9.5",
     "vinyl-fs": "^3.0.3"
   }
 }
