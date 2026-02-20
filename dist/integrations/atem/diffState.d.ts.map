@@ -1,0 +1,1 @@
+{"version":3,"file":"diffState.d.ts","sourceRoot":"","sources":["../../../src/integrations/atem/diffState.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,YAAY,CAAA;AACjC,OAAO,EAAE,YAAY,EAAE,MAAM,sBAAsB,CAAA;AACnD,OAAO,EAAW,eAAe,EAAmB,QAAQ,EAAE,MAAM,+BAA+B,CAAA;AAEnG;;;EAGE;AACF,wBAAgB,iBAAiB,CAAC,QAAQ,EAAE,QAAQ,CAAC,eAAe,CAAC,GAAG,YAAY,CAAC,IAAI,CAAC,cAAc,CAAC,CA8FxG"}

@@ -1,0 +1,69 @@
+{
+    "$schema": "../../../$schemas/action-schema.json",
+    "actions": [
+        {
+            "id": "clearAllChannels",
+            "name": "Clear",
+            "destructive": true
+        },
+        {
+            "id": "restartServer",
+            "name": "Restart Server",
+            "destructive": true
+        },
+        {
+            "id": "listMedia",
+            "name": "List items in media folder",
+            "destructive": false,
+            "payload": {
+                "type": "object",
+                "properties": {
+                    "subDirectory": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "result": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "clip": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "MOVIE",
+                                "STILL",
+                                "AUDIO"
+                            ]
+                        },
+                        "size": {
+                            "type": "number"
+                        },
+                        "datetime": {
+                            "type": "number"
+                        },
+                        "frames": {
+                            "type": "number"
+                        },
+                        "framerate": {
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "clip",
+                        "type",
+                        "size",
+                        "dateTime",
+                        "frames",
+                        "framerate"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,62 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "HTTP Send Options",
+    "type": "object",
+    "properties": {
+        "resendTime": {
+            "type": "integer",
+            "description": "Minimum time in ms before a command is resent, set to <= 0 or undefined to disable",
+            "ui:description": "Minimum time in ms before a command is resent, set to a number > 0 to enable",
+            "ui:title": "Resend time in ms",
+            "default": 0
+        },
+        "httpProxy": {
+            "type": "string",
+            "description": "HTTP Proxy",
+            "ui:title": "HTTP Proxy address"
+        },
+        "httpsProxy": {
+            "type": "string",
+            "description": "HTTPS Proxy",
+            "ui:title": "HTTPS Proxy address"
+        },
+        "noProxy": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "URLs not to use a proxy for (E.G. github.com)",
+            "ui:description": "URLs that shouldn't be accessed via a proxy (E.G. github.com)",
+            "ui:title": "No proxy"
+        },
+        "oauthTokenHost": {
+            "type": "string",
+            "ui:title": "OAuth 2.0 Token Host",
+            "ui:description": "Base URL of the authorization server. To use Client Credentials Flow, provide: OAuth 2.0 Token Host, OAuth 2.0 Client ID, OAuth 2.0 Client Secret, and optionally: OAuth 2.0 Token Path, OAuth 2.0 Audience, to exchange the credentials for a Bearer token that will be added to EVERY outgoing request made through this device. Example: 'https://auth.example.com'"
+        },
+        "oauthTokenPath": {
+            "type": "string",
+            "ui:title": "OAuth 2.0 Token Path",
+            "ui:description": "Path of the Token endpoint. Example: '/oauth/token' (default)"
+        },
+        "oauthClientId": {
+            "type": "string",
+            "ui:title": "OAuth 2.0 Client ID"
+        },
+        "oauthClientSecret": {
+            "type": "string",
+            "ui:title": "OAuth 2.0 Client Secret"
+        },
+        "oauthAudience": {
+            "type": "string",
+            "ui:title": "OAuth 2.0 Audience"
+        },
+        "bearerToken": {
+            "type": "string",
+            "ui:title": "Bearer Token",
+            "ui:descrption": "Long-lived Bearer token that will be added to EVERY outgoing request made through this device"
+        }
+    },
+    "required": [],
+    "additionalProperties": false
+}
