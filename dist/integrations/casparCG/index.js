@@ -172,13 +172,38 @@ class CasparCGDevice extends device_1.DeviceWithState {
     handleState(newState, newMappings) {
         super.onHandleState(newState, newMappings);
         const previousStateTime = Math.max(this.getCurrentTime(), newState.time);
-        const oldCasparState = (this.getStateBefore(previousStateTime) || { state: { channels: {} } }).state;
+        const oldState = this.getStateBefore(previousStateTime);
+        const oldCasparState = (oldState || { state: { channels: {} } }).state;
         const convertTrace = (0, lib_1.startTrace)(`device:convertState`, { deviceId: this.deviceId });
         const newCasparState = this.convertStateToCaspar(newState, newMappings);
         this.emit('timeTrace', (0, lib_1.endTrace)(convertTrace));
         const diffTrace = (0, lib_1.startTrace)(`device:diffState`, { deviceId: this.deviceId });
         const commandsToAchieveState = casparcg_state_1.CasparCGState.diffStatesOrderedCommands(oldCasparState, newCasparState, newState.time);
         this.emit('timeTrace', (0, lib_1.endTrace)(diffTrace));
+        const seekPlayCommands = commandsToAchieveState
+            .filter((cmd) => cmd.command === casparcg_connection_1.Commands.Play && typeof cmd.params.seek === 'number')
+            .map((cmd) => {
+            const params = cmd.params;
+            return {
+                channel: params.channel,
+                layer: params.layer,
+                clip: params.clip,
+                seek: params.seek,
+            };
+        });
+        if (seekPlayCommands.length > 0) {
+            this.emitDebug({
+                seekDiagnostic: {
+                    deviceId: this.deviceId,
+                    now: this.getCurrentTime(),
+                    newStateTime: newState.time,
+                    previousStateTime,
+                    oldStateTime: oldState?.time ?? null,
+                    fpsUsed: this.initOptions?.fps || 25,
+                    commands: seekPlayCommands,
+                },
+            });
+        }
         // clear any queued commands later than this time:
         this._doOnTime.clearQueueNowAndAfter(previousStateTime);
         // add the new commands to the queue:

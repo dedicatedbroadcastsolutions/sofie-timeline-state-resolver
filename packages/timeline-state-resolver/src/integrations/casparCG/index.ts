@@ -253,7 +253,8 @@ export class CasparCGDevice extends DeviceWithState<State, DeviceOptionsCasparCG
 
 		const previousStateTime = Math.max(this.getCurrentTime(), newState.time)
 
-		const oldCasparState = (this.getStateBefore(previousStateTime) || { state: { channels: {} } }).state
+		const oldState = this.getStateBefore(previousStateTime)
+		const oldCasparState = (oldState || { state: { channels: {} } }).state
 
 		const convertTrace = startTrace(`device:convertState`, { deviceId: this.deviceId })
 		const newCasparState = this.convertStateToCaspar(newState, newMappings)
@@ -266,6 +267,31 @@ export class CasparCGDevice extends DeviceWithState<State, DeviceOptionsCasparCG
 			newState.time
 		)
 		this.emit('timeTrace', endTrace(diffTrace))
+
+		const seekPlayCommands = commandsToAchieveState
+			.filter((cmd) => cmd.command === Commands.Play && typeof (cmd.params as Record<string, unknown>).seek === 'number')
+			.map((cmd) => {
+				const params = cmd.params as Record<string, unknown>
+				return {
+					channel: params.channel,
+					layer: params.layer,
+					clip: params.clip,
+					seek: params.seek,
+				}
+			})
+		if (seekPlayCommands.length > 0) {
+			this.emitDebug({
+				seekDiagnostic: {
+					deviceId: this.deviceId,
+					now: this.getCurrentTime(),
+					newStateTime: newState.time,
+					previousStateTime,
+					oldStateTime: oldState?.time ?? null,
+					fpsUsed: this.initOptions?.fps || 25,
+					commands: seekPlayCommands,
+				},
+			})
+		}
 
 		// clear any queued commands later than this time:
 		this._doOnTime.clearQueueNowAndAfter(previousStateTime)
