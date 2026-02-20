@@ -1,0 +1,1 @@
+{"version":3,"file":"device.js","sourceRoot":"","sources":["../../src/service/device.ts"],"names":[],"mappings":";;;AAwBA;;GAEG;AACH,MAAsB,MAAM;IAG3B,YAAsB,OAAsC;QAAtC,YAAO,GAAP,OAAO,CAA+B;QAC3D,UAAU;IACX,CAAC;IAWD,kBAAkB;IAClB,KAAK,CAAC,SAAS,CAAC,iBAA2B;QAC1C,wBAAwB;IACzB,CAAC;IACD,kBAAkB;IAClB,KAAK,CAAC,SAAS;QACd,wBAAwB;IACzB,CAAC;CAsBD;AA7CD,wBA6CC"}

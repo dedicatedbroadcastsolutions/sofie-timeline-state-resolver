@@ -3,6 +3,7 @@
 	"version": "9.2.2",
 	"description": "Have timeline, control stuff",
 	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"typings": "dist/index.d.ts",
 	"module": "dist/module/index.js",
 	"browser": "dist/browser/index.js",
