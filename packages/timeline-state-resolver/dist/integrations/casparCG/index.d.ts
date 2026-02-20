@@ -26,6 +26,7 @@ export declare class CasparCGDevice extends DeviceWithState<State, DeviceOptions
     private _retryTimeout;
     private _retryTime;
     private _currentState;
+    private _detectedChannelFps;
     constructor(deviceId: string, deviceOptions: DeviceOptionsCasparCGInternal, getCurrentTime: () => Promise<number>);
     /**
      * Initiates the connection with CasparCG through the ccg-connection lib and
@@ -93,6 +94,8 @@ export declare class CasparCGDevice extends DeviceWithState<State, DeviceOptions
      */
     private _assertIntendedState;
     private _connectionChanged;
+    private updateDetectedFpsFromInfo;
+    private getChannelFps;
     private getVideMode;
 }
 //# sourceMappingURL=index.d.ts.map

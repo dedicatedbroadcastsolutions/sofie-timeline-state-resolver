@@ -28,6 +28,7 @@ class CasparCGDevice extends device_1.DeviceWithState {
         this._transitionHandler = new transitionHandler_1.InternalTransitionHandler();
         this._retryTime = null;
         this._currentState = { channels: {} };
+        this._detectedChannelFps = {};
         if (deviceOptions.options) {
             if (deviceOptions.commandReceiver)
                 this._commandReceiver = deviceOptions.commandReceiver;
@@ -60,6 +61,7 @@ class CasparCGDevice extends device_1.DeviceWithState {
                 if (error)
                     return true;
                 const response = await request;
+                this.updateDetectedFpsFromInfo(response?.data);
                 const channelPromises = [];
                 const channelLength = response?.data?.['length'] ?? 0;
                 // Issue commands
@@ -116,12 +118,13 @@ class CasparCGDevice extends device_1.DeviceWithState {
             return false; // todo - should this throw?
         }
         const response = await request;
+        this.updateDetectedFpsFromInfo(response?.data);
         if (response?.data[0]) {
             response.data.forEach((obj) => {
                 this._currentState.channels[obj.channel] = {
                     channelNo: obj.channel,
                     videoMode: this.getVideMode(obj),
-                    fps: obj.frameRate,
+                    fps: this.getChannelFps(obj.channel),
                     layers: {},
                 };
             });
@@ -199,7 +202,7 @@ class CasparCGDevice extends device_1.DeviceWithState {
                     newStateTime: newState.time,
                     previousStateTime,
                     oldStateTime: oldState?.time ?? null,
-                    fpsUsed: this.initOptions?.fps || 25,
+                    fpsUsed: this.getChannelFps(),
                     commands: seekPlayCommands,
                 },
             });
@@ -431,7 +434,7 @@ class CasparCGDevice extends device_1.DeviceWithState {
                 // create a channel in state if necessary, or reuse existing channel
                 const channel = caspar.channels[mapping.options.channel] || { channelNo: mapping.options.channel, layers: {} };
                 channel.channelNo = mapping.options.channel;
-                channel.fps = this.initOptions ? this.initOptions.fps || 25 : 25;
+                channel.fps = this.getChannelFps(mapping.options.channel);
                 caspar.channels[channel.channelNo] = channel;
                 let foregroundObj = timelineState.layers[layerName];
                 let backgroundObj = _.last(_.filter(timelineState.layers, (obj) => {
@@ -849,6 +852,33 @@ class CasparCGDevice extends device_1.DeviceWithState {
     }
     _connectionChanged() {
         this.emit('connectionChanged', this.getStatus());
+    }
+    updateDetectedFpsFromInfo(infoEntries) {
+        if (!infoEntries?.length)
+            return;
+        for (const entry of infoEntries) {
+            const channelRate = Number(entry.channelRate) || 0;
+            const frameRate = Number(entry.frameRate) || 0;
+            const detected = entry.interlaced
+                ? channelRate || frameRate
+                : frameRate || channelRate;
+            if (detected > 0) {
+                this._detectedChannelFps[entry.channel] = detected;
+            }
+        }
+    }
+    getChannelFps(channel) {
+        if (this.initOptions?.fps && this.initOptions.fps > 0)
+            return this.initOptions.fps;
+        if (channel !== undefined) {
+            const channelFps = this._detectedChannelFps[channel];
+            if (channelFps && channelFps > 0)
+                return channelFps;
+        }
+        const firstDetectedFps = Object.values(this._detectedChannelFps).find((fps) => fps > 0);
+        if (firstDetectedFps)
+            return firstDetectedFps;
+        return 25;
     }
     getVideMode(info) {
         return `${info.format}${info.interlaced ? 'I' : 'P'}${info.frameRate}`;
